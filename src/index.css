@@ -1234,3 +1234,85 @@ body {
 .footer-logo:hover {
   opacity: 1;
 }
+
+/* ==========================================
+   Mobile Responsiveness Upgrades
+   ========================================== */
+
+@media (max-width: 576px) {
+  .container {
+    padding: 24px 16px;
+  }
+  
+  .app-header {
+    margin-bottom: 24px;
+  }
+  
+  .app-header h1 {
+    font-size: 28px;
+  }
+  
+  .card {
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .drag-drop-zone {
+    padding: 24px 16px;
+  }
+
+  .step-content {
+    padding: 0 12px 16px 36px;
+  }
+
+  .step-indicator {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .action-row .btn {
+    width: 100%;
+  }
+  
+  .flip-animation-container {
+    padding: 12px;
+  }
+
+  .flip-guide-text {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+  }
+
+  /* Scale virtual sheets down to fit small screens */
+  .sheet-stack-container {
+    min-height: 280px;
+    padding: 20px 0;
+  }
+  
+  .virtual-sheet {
+    width: 130px;
+    height: 180px;
+    margin-bottom: -155px; /* Adjust overlap offset */
+  }
+
+  .sheet-page-label {
+    font-size: 16px;
+  }
+  
+  .sheet-header, .sheet-footer {
+    font-size: 8px;
+  }
+  
+  .sheet-face {
+    padding: 12px;
+  }
+}
