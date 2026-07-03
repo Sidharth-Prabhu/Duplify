@@ -1,8 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { splitPdf, type ProcessedPDFResult } from './utils/pdfProcessor';
+import frisscoEssentialsLogo from './assets/frissco_essentials.png';
 import frisscoLogo from './assets/frissco.png';
 
 export default function App() {
+  // Theme state
+  const [theme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('frissco-theme') as 'light' | 'dark') || 'dark';
+  });
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('frissco-theme', theme);
+  }, [theme]);
+
   // File states
   const [file, setFile] = useState<File | null>(null);
   const [fileMeta, setFileMeta] = useState<{ name: string; sizeMB: string; pages: number } | null>(null);
@@ -183,25 +195,31 @@ export default function App() {
   };
 
   return (
-    <div>
-      <div className="glow-bg"></div>
+    <div className="app-root">
+      {/* Global suite navigation header */}
+      <header className="main-navbar">
+        <div className="navbar-container">
+          <div className="navbar-left">
+            <img src={frisscoEssentialsLogo} alt="Frissco Essentials" className="brand-logo" />
+            <span className="navbar-divider">/</span>
+            <div className="module-badge">
+              <span className="module-name">Duplify</span>
+              <span className="module-pill">PRINT MODULE</span>
+            </div>
+          </div>
+        </div>
+      </header>
 
       <div className="container">
-        {/* Header */}
-        <header className="app-header">
-          <div className="logo">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17 17H7V15H17V17ZM17 13H7V11H17V13ZM17 9H7V7H17V9ZM19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor" />
-            </svg>
-            <span>Duplify</span>
-          </div>
+        {/* Module Title Section */}
+        <div className="page-header">
           <h1>Duplex Printing Manager</h1>
-          <p className="subtitle">Process PDF files for double-sided manual printing effortlessly</p>
-        </header>
+          <p className="subtitle">Process and split PDF files for double-sided manual printing effortlessly</p>
+        </div>
 
         {error && (
-          <div className="card" style={{ borderColor: 'var(--color-danger)', backgroundColor: 'rgba(239, 68, 68, 0.05)', color: 'var(--color-danger)', padding: '16px', marginBottom: '24px' }}>
-            <p style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="card error-card">
+            <p className="error-message">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
                 <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor" />
               </svg>
@@ -250,12 +268,12 @@ export default function App() {
                     style={{ display: 'none' }}
                   />
                   <div className="upload-icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04C2.34 8.36 0 10.91 0 14C0 17.31 2.69 20 6 20H19C21.76 20 24 17.76 24 15C24 12.36 21.95 10.22 19.35 10.04ZM19 18H6C3.79 18 2 16.21 2 14C2 11.95 3.53 10.24 5.56 10.03L6.63 9.92L7.13 8.97C8.08 7.14 9.94 6 12 6C14.89 6 17.39 8.01 17.85 10.85L18.09 12.32L19.61 12.43C21.01 12.53 22 13.68 22 15C22 16.65 20.65 18 19 18ZM8 13H10.55V16H13.45V13H16L12 9L8 13Z" fill="currentColor" />
                     </svg>
                   </div>
-                  <p className="drag-text">Drag and drop your PDF here, or <span className="browse-link">browse</span></p>
-                  <p className="file-limits">Max file size: 50MB</p>
+                  <p className="drag-text">Drag and drop your PDF here, or <span className="browse-link">browse files</span></p>
+                  <p className="file-limits">Supports documents up to 50MB</p>
                 </div>
               ) : null}
 
@@ -265,7 +283,7 @@ export default function App() {
                     <div className="progress-fill" style={{ width: '100%' }}></div>
                   </div>
                   <div className="progress-status">
-                    <span>Reading and processing PDF data...</span>
+                    <span>Analyzing pages and preparing duplex sheets...</span>
                   </div>
                 </div>
               )}
@@ -283,7 +301,7 @@ export default function App() {
                       </p>
                     </div>
                   </div>
-                  <button className="btn-text" onClick={handleReset}>
+                  <button className="btn-change-file" onClick={handleReset}>
                     Change File
                   </button>
                 </div>
@@ -293,11 +311,11 @@ export default function App() {
             {/* Settings Card */}
             <div className={`card card-settings ${!file ? 'disabled' : ''}`}>
               <div className="card-header">
-                <h2>2. Duplex Configuration</h2>
+                <h2>2. Configuration</h2>
               </div>
               <div className="card-body">
                 <div className="setting-group">
-                  <label className="setting-label">Even Page Printing Order (Side B)</label>
+                  <label className="setting-label">Back Page Layout Order (Side B)</label>
                   <div className="radio-cards">
                     <label className="radio-card">
                       <input
@@ -312,7 +330,7 @@ export default function App() {
                           <span className="badge badge-rec">Recommended</span>
                         </div>
                         <span className="radio-desc">
-                          Prints back pages in reverse (e.g. 10, 8, 6...). Perfect for printers that output pages face-up. Flip the stack as-is and reload.
+                          Prints backs reversed (e.g. 10, 8, 6...). Best for face-up output trays. Flip and feed stack directly.
                         </span>
                       </div>
                     </label>
@@ -326,7 +344,7 @@ export default function App() {
                       <div className="radio-content">
                         <span className="radio-title">Normal Order</span>
                         <span className="radio-desc">
-                          Prints back pages in normal order (e.g. 2, 4, 6...). Use if you manually reverse the stack before reloading, or for face-down output.
+                          Prints backs normally (e.g. 2, 4, 6...). Best if you manually reverse the stack or have face-down trays.
                         </span>
                       </div>
                     </label>
@@ -337,7 +355,7 @@ export default function App() {
                   <div className="toggle-control">
                     <div>
                       <label className="setting-label" htmlFor="rotate-even-toggle">Rotate Back Pages 180°</label>
-                      <p className="setting-hint">Flip orientation if your printer prints back sides upside down.</p>
+                      <p className="setting-hint">Flip orientation if back sides print upside down relative to fronts.</p>
                     </div>
                     <label className="switch">
                       <input
@@ -356,7 +374,7 @@ export default function App() {
             {/* Stepper Card */}
             <div className={`card card-wizard ${!file ? 'disabled' : ''}`}>
               <div className="card-header">
-                <h2>3. Manual Duplex Stepper</h2>
+                <h2>3. Print Steps</h2>
               </div>
 
               <div className="stepper">
@@ -367,17 +385,19 @@ export default function App() {
                     <div className="step-title">Print Side A (Fronts)</div>
                   </div>
                   <div className="step-content">
-                    <p>Generate and print the front (odd) pages of your document.</p>
+                    <p>Load blank paper and print all odd-numbered front pages.</p>
                     <div className="action-row">
                       <button
                         className="btn btn-primary"
                         onClick={() => handlePrint('a')}
                         disabled={isProcessing}
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M19 8H5C3.34 8 2 9.34 2 11V17H6V21H18V17H22V11C22 9.34 20.66 8 19 8ZM16 19H8V15H16V19ZM19 12C18.45 12 18 11.55 18 11C18 10.45 18.45 10 19 10C19.55 10 20 10.45 20 11C20 11.55 19.55 12 19 12ZM18 3H6V7H18V3Z" fill="currentColor" />
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                          <rect x="6" y="14" width="12" height="8"></rect>
                         </svg>
-                        Print Side A (Odd Pages)
+                        Print Side A
                       </button>
                       <a
                         className="btn btn-secondary"
@@ -402,7 +422,7 @@ export default function App() {
                         }}
                       />
                       <span className="checkbox-checkmark"></span>
-                      I have printed Side A successfully
+                      Side A printed successfully
                     </label>
                   </div>
                 </div>
@@ -413,10 +433,10 @@ export default function App() {
                     if (checkADone) setCheckFlipped(false);
                   }}>
                     <div className="step-num">B</div>
-                    <div className="step-title">Flip & Reload Paper</div>
+                    <div className="step-title">Flip & Reload Stack</div>
                   </div>
                   <div className="step-content">
-                    <p>Take the printed sheets from the output tray, flip them, and reload them into the input tray.</p>
+                    <p>Retrieve the printed sheets, flip them, and reload them into your printer's input tray.</p>
 
                     <div className="flip-animation-container">
                       <div className="flip-animation-box">
@@ -426,10 +446,12 @@ export default function App() {
                         </div>
                       </div>
                       <div className="flip-guide-text">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: 'var(--color-warning)' }}>
-                          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor" />
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--color-warning)', marginTop: '2px' }}>
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
                         </svg>
-                        <span>Flip sheets along the <strong>long edge</strong> so the blank sides are ready to print. Keep the top of pages facing inside the printer.</span>
+                        <span>Flip sheets along the <strong>long edge</strong> so the blank side is ready to receive prints. Maintain correct heading alignment.</span>
                       </div>
                     </div>
 
@@ -441,7 +463,7 @@ export default function App() {
                         onChange={(e) => setCheckFlipped(e.target.checked)}
                       />
                       <span className="checkbox-checkmark"></span>
-                      Paper stack is reloaded
+                      Stack is flipped & reloaded
                     </label>
                   </div>
                 </div>
@@ -453,17 +475,19 @@ export default function App() {
                     <div className="step-title">Print Side B (Backs)</div>
                   </div>
                   <div className="step-content">
-                    <p>Generate and print the back (even) pages in the matching order.</p>
+                    <p>Print the back sides. The pages will be printed in order matching your config settings.</p>
                     <div className="action-row">
                       <button
                         className="btn btn-primary"
                         onClick={() => handlePrint('b')}
                         disabled={isProcessing}
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M19 8H5C3.34 8 2 9.34 2 11V17H6V21H18V17H22V11C22 9.34 20.66 8 19 8ZM16 19H8V15H16V19ZM19 12C18.45 12 18 11.55 18 11C18 10.45 18.45 10 19 10C19.55 10 20 10.45 20 11C20 11.55 19.55 12 19 12ZM18 3H6V7H18V3Z" fill="currentColor" />
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                          <rect x="6" y="14" width="12" height="8"></rect>
                         </svg>
-                        Print Side B (Even Pages)
+                        Print Side B
                       </button>
                       <a
                         className="btn btn-secondary"
@@ -478,8 +502,8 @@ export default function App() {
                     </div>
 
                     {checkADone && checkFlipped && (
-                      <button className="btn btn-outline-success" onClick={handleReset}>
-                        Done! Reset Printer Utility
+                      <button className="btn btn-success-finish" onClick={handleReset}>
+                        Complete & Reset Utility
                       </button>
                     )}
                   </div>
@@ -488,11 +512,11 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Panel: Live Visual Simulation */}
+          {/* Right Panel: Clean Grid Sheet Stack Simulator */}
           <div className="panel-right">
             <div className="card card-simulator">
               <div className="card-header flex-header">
-                <h2>Live Sheet Stack Preview</h2>
+                <h2>Sheet Layout Inspector</h2>
                 <span className="sheets-badge">
                   {processedData ? processedData.totalSheets : 0} {processedData?.totalSheets === 1 ? 'Sheet' : 'Sheets'}
                 </span>
@@ -501,68 +525,68 @@ export default function App() {
                 {!processedData ? (
                   <div className="preview-placeholder">
                     <div className="doc-icon">
-                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM13 9V3.5L18.5 9H13Z" fill="currentColor" />
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
                       </svg>
                     </div>
-                    <h3>Waiting for Document Upload</h3>
-                    <p>Once you upload a PDF file, you will be able to see the interactive front/back printing layout here.</p>
+                    <h3>No Document Active</h3>
+                    <p>Upload a PDF document to preview sheet-by-sheet mapping of fronts and backs.</p>
                   </div>
                 ) : (
                   <div className="simulator-view">
-                    <div className="simulator-controls">
-                      <span className="tip-text">Hover or click a sheet to flip it and verify pages!</span>
-                    </div>
+                    <p className="inspector-hint">Click individual sheets below to test flip and review alignment.</p>
 
-                    <div className="sheet-stack-container">
-                      {processedData.sheetsPreview.map((sheet, idx) => {
+                    <div className="sheets-grid">
+                      {processedData.sheetsPreview.map((sheet) => {
                         const isFlipped = !!flippedSheets[sheet.sheetNum];
-
-                        // Calculate offset stacking translations for realistic overlap look
-                        const zTranslate = idx * 6;
-                        const yTranslate = idx * -4;
-                        const xTranslate = idx % 2 === 0 ? 1 : -1;
-
-                        const baseTransform = `translateZ(${zTranslate}px) rotateX(15deg) translateY(${yTranslate}px) translateX(${xTranslate}px)`;
 
                         return (
                           <div
                             key={sheet.sheetNum}
-                            className={`virtual-sheet ${rotateEven ? 'rotate-back' : ''} ${isFlipped ? 'flipped' : ''}`}
-                            style={{
-                              zIndex: isFlipped ? 100 : idx + 1,
-                              transform: isFlipped
-                                ? `translateZ(60px) rotateX(0deg) rotateY(180deg)`
-                                : baseTransform
-                            }}
+                            className={`grid-sheet-card ${isFlipped ? 'flipped' : ''}`}
                             onClick={() => toggleSheetFlip(sheet.sheetNum)}
+                            title="Click to flip sheet"
                           >
-                            {/* Front Side (Odd Page) */}
-                            <div className="sheet-face sheet-face-front">
-                              <div className="sheet-header">
-                                <span>Sheet {sheet.sheetNum}</span>
-                                <span>Front</span>
+                            <div className="grid-sheet-inner">
+                              {/* Front side view */}
+                              <div className="grid-sheet-front">
+                                <div className="sheet-card-header">
+                                  <span className="sheet-badge-pill">Sheet {sheet.sheetNum}</span>
+                                  <span className="side-label">Front</span>
+                                </div>
+                                <div className="sheet-card-page">
+                                  <span className="page-number">{sheet.front}</span>
+                                  <span className="page-desc">Odd Page</span>
+                                </div>
+                                <div className="sheet-card-footer">
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                  </svg>
+                                  <span>Tap to Flip</span>
+                                </div>
                               </div>
-                              <div className="sheet-body">
-                                <span className="sheet-page-label">{sheet.front}</span>
-                                <span className="sheet-page-indicator">Front Side</span>
-                              </div>
-                              <div className="sheet-footer">Duplex Print</div>
-                            </div>
 
-                            {/* Back Side (Even Page / Blank) */}
-                            <div className={`sheet-face sheet-face-back ${sheet.back === 'Blank' ? 'blank-page' : ''}`}>
-                              <div className="sheet-header">
-                                <span>Sheet {sheet.sheetNum}</span>
-                                <span>Back</span>
+                              {/* Back side view */}
+                              <div className={`grid-sheet-back ${sheet.back === 'Blank' ? 'blank-page' : ''} ${rotateEven ? 'rotated-back' : ''}`}>
+                                <div className="sheet-card-header">
+                                  <span className="sheet-badge-pill">Sheet {sheet.sheetNum}</span>
+                                  <span className="side-label">Back</span>
+                                </div>
+                                <div className="sheet-card-page">
+                                  <span className="page-number">{sheet.back}</span>
+                                  <span className="page-desc">{sheet.back === 'Blank' ? 'Blank Padding' : 'Even Page'}</span>
+                                </div>
+                                <div className="sheet-card-footer">
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                  </svg>
+                                  <span>Tap to Flip</span>
+                                </div>
                               </div>
-                              <div className="sheet-body">
-                                <span className="sheet-page-label">{sheet.back}</span>
-                                <span className="sheet-page-indicator">
-                                  {sheet.back === 'Blank' ? 'Blank' : 'Back Side'}
-                                </span>
-                              </div>
-                              <div className="sheet-footer">Duplex Print</div>
                             </div>
                           </div>
                         );
@@ -576,7 +600,15 @@ export default function App() {
         </main>
 
         <footer className="app-footer">
-          <p>Developed by <a href="https://frissco.net" target="_blank" rel="noopener noreferrer"><img src={frisscoLogo} alt="Frissco Creative Labs" className="footer-logo" /></a></p>
+          <div className="footer-content">
+            <p className="footer-attribution">
+              Developed by{' '}
+              <a href="https://www.frissco.net" target="_blank" rel="noopener noreferrer" className="footer-logo-link">
+                <img src={frisscoLogo} alt="Frissco Creative Labs" className="footer-logo-img" />
+              </a>
+            </p>
+            <p className="footer-meta">© {new Date().getFullYear()} Frissco Essentials. All rights reserved.</p>
+          </div>
         </footer>
       </div>
 
